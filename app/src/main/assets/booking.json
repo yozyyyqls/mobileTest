@@ -52,78 +52,18 @@
             {
                 "destination":
                 {
-                    "code": "CCC",
-                    "displayName": "CCC DisplayName",
+                    "code": "DDD",
+                    "displayName": "DDD DisplayName",
                     "url": "www.ship.com"
                 },
-                "destinationCity": "CCC",
+                "destinationCity": "DDD",
                 "origin":
-                {
-                    "code": "BBB",
-                    "displayName": "BBB DisplayName",
-                    "url": "www.ship.com"
-                },
-                "originCity": "BBB"
-            }
-        },
-        {
-            "id": 4,
-            "originAndDestinationPair":
-            {
-                "destination":
                 {
                     "code": "CCC",
                     "displayName": "CCC DisplayName",
                     "url": "www.ship.com"
                 },
-                "destinationCity": "CCC",
-                "origin":
-                {
-                    "code": "BBB",
-                    "displayName": "BBB DisplayName",
-                    "url": "www.ship.com"
-                },
-                "originCity": "BBB"
-            }
-        },
-        {
-            "id": 5,
-            "originAndDestinationPair":
-            {
-                "destination":
-                {
-                    "code": "CCC",
-                    "displayName": "CCC DisplayName",
-                    "url": "www.ship.com"
-                },
-                "destinationCity": "CCC",
-                "origin":
-                {
-                    "code": "BBB",
-                    "displayName": "BBB DisplayName",
-                    "url": "www.ship.com"
-                },
-                "originCity": "BBB"
-            }
-        },
-        {
-            "id": 6,
-            "originAndDestinationPair":
-            {
-                "destination":
-                {
-                    "code": "CCC",
-                    "displayName": "CCC DisplayName",
-                    "url": "www.ship.com"
-                },
-                "destinationCity": "CCC",
-                "origin":
-                {
-                    "code": "BBB",
-                    "displayName": "BBB DisplayName",
-                    "url": "www.ship.com"
-                },
-                "originCity": "BBB"
+                "originCity": "CCC"
             }
         }
     ]
