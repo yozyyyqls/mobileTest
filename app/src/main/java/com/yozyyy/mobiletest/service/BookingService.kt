@@ -1,7 +1,7 @@
 package com.yozyyy.mobiletest.service
 
-import com.yozyyy.mobiletest.entity.Booking
+import com.yozyyy.mobiletest.models.BookingList
 
 interface BookingService {
-    suspend fun fetchBookingData(): Result<Booking>
+    suspend fun fetchBookingData(): Result<BookingList>
 }

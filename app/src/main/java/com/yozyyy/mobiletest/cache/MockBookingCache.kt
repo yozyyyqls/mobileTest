@@ -1,24 +1,24 @@
-package com.yozyyy.mobiletest.data
+package com.yozyyy.mobiletest.cache
 
 import android.content.Context
 import android.util.Log
 import com.google.gson.Gson
-import com.yozyyy.mobiletest.entity.Booking
+import com.yozyyy.mobiletest.models.BookingList
 
 class MockBookingCache(context: Context): BookingCache {
     private val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    override fun saveBooking(booking: Booking) {
-        val bookingJson = Gson().toJson(booking)
+    override fun saveBooking(bookingList: BookingList) {
+        val bookingJson = Gson().toJson(bookingList)
         sharedPreferences.edit().putString(KEY_BOOKING, bookingJson).apply()
         sharedPreferences.edit().putLong(KEY_LAST_UPDATED, System.currentTimeMillis()).apply()
     }
 
-    override fun getBooking(): Booking? {
+    override fun getBooking(): BookingList? {
         Log.d(TAG, "fetching booking data from cache...")
         val bookingJson = sharedPreferences.getString(KEY_BOOKING, null) ?: return null
         return try {
-            Gson().fromJson(bookingJson, Booking::class.java)
+            Gson().fromJson(bookingJson, BookingList::class.java)
         } catch (e: Exception) {
             Log.e(TAG, "get booking from cache fail, cause: ${e.message}")
             null

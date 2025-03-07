@@ -4,92 +4,83 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.yozyyy.mobiletest.data.BookingCache
-import com.yozyyy.mobiletest.data.MockBookingCache
-import com.yozyyy.mobiletest.entity.Booking
-import com.yozyyy.mobiletest.service.BookingService
-import com.yozyyy.mobiletest.service.BookingState
-import com.yozyyy.mobiletest.service.MockBookingService
-import kotlinx.coroutines.delay
+import com.google.gson.Gson
+import com.yozyyy.mobiletest.manager.BookingDataProvider
+import com.yozyyy.mobiletest.manager.BookingState
+import com.yozyyy.mobiletest.models.Booking
+import com.yozyyy.mobiletest.models.BookingList
+import com.yozyyy.mobiletest.models.Location
+import com.yozyyy.mobiletest.models.OriginAndDestinationPair
+import com.yozyyy.mobiletest.models.Segment
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class BookingViewModel(context: Application) : AndroidViewModel(context) {
-    private val bookingService: BookingService = MockBookingService(context)
-    private val bookingCache: BookingCache = MockBookingCache(context)
+class BookingViewModel(private val context: Application) : AndroidViewModel(context) {
+    private val bookingProvider = BookingDataProvider(context)
 
     private val _bookingState = MutableStateFlow<BookingState>(BookingState.Loading)
     val bookingState: StateFlow<BookingState> = _bookingState.asStateFlow()
 
     fun fetchBookingData() {
         viewModelScope.launch {
-            // fetch data from cache
-            val cacheBooking = bookingCache.getBooking()
-            val lastUpdateTime = bookingCache.getLastUpdateTime()
-            val isCacheValid =
-                cacheBooking != null && (System.currentTimeMillis() - lastUpdateTime < CACHE_EXPIRATION_TIME)
-
-            if (!isCacheValid) {
-                // fetch data from mock network
-                val result = bookingService.fetchBookingData()
-                if (result.isSuccess) {
-                    result.getOrNull()?.let { booking ->
-                        bookingCache.saveBooking(booking)
-                        _bookingState.value = if (isBookingExpired(booking)) {
-                            BookingState.Expired(booking)
-                        } else {
-                            BookingState.Success(booking)
-                        }
-                    }
-                } else {
-                    val exception = result.exceptionOrNull() ?: Exception("Unknown error")
-                    Log.e(TAG, "fetch booking data fails, cause: ${exception.message}")
-                    if (cacheBooking == null) {
-                        _bookingState.value = BookingState.Error(exception, null)
-                    }
-                }
-            } else {
-                _bookingState.value = if (isBookingExpired(cacheBooking!!)) {
-                    BookingState.Expired(cacheBooking)
-                } else {
-                    BookingState.Success(cacheBooking)
-                }
-            }
+            _bookingState.value = bookingProvider.fetch()
         }
     }
 
     fun refreshData() {
+        Log.d(TAG, "refreshing booking data...")
         viewModelScope.launch {
-            Log.d(TAG, "refreshing booking data...")
             _bookingState.value = BookingState.Loading
-            delay(1000)
-            val result = bookingService.fetchBookingData()
-            if (result.isSuccess) {
-                val booking = result.getOrNull()
-                booking?.let {
-                    bookingCache.saveBooking(it)
-                    _bookingState.value = if (isBookingExpired(it)) {
-                        BookingState.Expired(it)
-                    } else {
-                        BookingState.Success(it)
-                    }
-                }
-            } else {
-                val exception = result.exceptionOrNull() ?: Exception("Unknown error")
-                Log.e(TAG, "refresh booking data fails, cause: ${exception.message}")
-                _bookingState.value = BookingState.Error(exception, null)
-            }
+            _bookingState.value = bookingProvider.refresh()
         }
     }
 
-    private fun isBookingExpired(booking: Booking): Boolean {
-        return System.currentTimeMillis() > booking.expiryTime
+    fun isBookingExpired(booking: Booking): Boolean {
+        return System.currentTimeMillis() > booking.expiryTime * 1000
+    }
+
+    suspend fun addBooking() = withContext(Dispatchers.IO){
+        val newBooking = Booking(
+            "HIJKLMN",
+            "GGGHHHIIIJJJKKKLLL",
+            false,
+            1744033943,
+            1000,
+            mutableListOf(
+                Segment(
+                    1,
+                    OriginAndDestinationPair(
+                        originCity = "AAA",
+                        origin = Location("AAA", "Display AAA", ""),
+                        destinationCity = "BBB",
+                        destination = Location("BBB", "Display BBB", ""),
+                    )
+                ),
+                Segment(
+                    1,
+                    OriginAndDestinationPair(
+                        originCity = "BBB",
+                        origin = Location("BBB", "Display BBB", ""),
+                        destinationCity = "CCC",
+                        destination = Location("CCC", "Display CCC", ""),
+                    )
+                )
+            )
+        )
+        // read the old data
+        val json = context.assets.open("booking.json").bufferedReader().use { it.readText() }
+        val bookings = Gson().fromJson(json, BookingList::class.java).bookings
+
+        val newBookings = mutableListOf(newBooking)
+        newBookings.addAll(bookings)
+        _bookingState.value = BookingState.Success(BookingList(newBookings))
     }
 
     companion object {
         private const val TAG: String = "BookingViewModel"
-        private const val CACHE_EXPIRATION_TIME = 10 * 1000L // 10s for debug
     }
 }

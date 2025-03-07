@@ -1,4 +1,4 @@
-package com.yozyyy.mobiletest.entity
+package com.yozyyy.mobiletest.models
 
 data class Segment(
     val id: Int,

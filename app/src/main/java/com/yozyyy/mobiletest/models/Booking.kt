@@ -1,4 +1,4 @@
-package com.yozyyy.mobiletest.entity
+package com.yozyyy.mobiletest.models
 
 data class Booking(
     val shipReference: String,

@@ -1,5 +1,7 @@
 package com.yozyyy.mobiletest.ui
 
+import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.Card
@@ -26,10 +29,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,13 +43,15 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.yozyyy.mobiletest.entity.Booking
-import com.yozyyy.mobiletest.entity.Location
-import com.yozyyy.mobiletest.entity.OriginAndDestinationPair
-import com.yozyyy.mobiletest.entity.Segment
-import com.yozyyy.mobiletest.service.BookingState
+import com.yozyyy.mobiletest.R
+import com.yozyyy.mobiletest.manager.BookingState
+import com.yozyyy.mobiletest.models.Booking
+import com.yozyyy.mobiletest.models.Location
+import com.yozyyy.mobiletest.models.OriginAndDestinationPair
+import com.yozyyy.mobiletest.models.Segment
 import com.yozyyy.mobiletest.ui.theme.MobileTestTheme
 import com.yozyyy.mobiletest.ui.theme.blue203
+import kotlinx.coroutines.launch
 import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,6 +59,8 @@ import java.util.Date
 fun BookingListScreen(viewModel: BookingViewModel = viewModel()) {
     val bookingState by viewModel.bookingState.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
@@ -71,8 +81,19 @@ fun BookingListScreen(viewModel: BookingViewModel = viewModel()) {
                     viewModel.refreshData()
                 }) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.Refresh,
+                        imageVector = Icons.Default.Refresh,
                         contentDescription = "Refresh"
+                    )
+                }
+                IconButton(onClick = {
+                    Toast.makeText(context, "Add booking", Toast.LENGTH_SHORT).show()
+                    scope.launch {
+                        viewModel.addBooking()
+                    }
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add booking"
                     )
                 }
             }
@@ -92,20 +113,27 @@ fun BookingListScreen(viewModel: BookingViewModel = viewModel()) {
                 }
 
                 is BookingState.Success -> {
-                    val booking = (bookingState as BookingState.Success).booking
-                    BookingContent(booking)
-                }
-
-                is BookingState.Expired -> {
-                    val booking = (bookingState as BookingState.Expired).booking
-                    BookingContent(booking, true)
+                    val bookings = (bookingState as BookingState.Success).bookingList.bookings
+                    if (bookings.isEmpty()) {
+                        Image(
+                            painter = painterResource(R.drawable.img_no_data),
+                            contentDescription = "No data",
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    } else {
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            items(bookings) { booking: Booking ->
+                                BookingContent(booking, viewModel.isBookingExpired(booking))
+                            }
+                        }
+                    }
                 }
 
                 is BookingState.Error -> {
                     val error = (bookingState as BookingState.Error)
                     Column(modifier = Modifier.fillMaxSize()) {
                         Text(
-                            "Error: ${error.exception.message}",
+                            "Error: ${error.errMsg}",
                             modifier = Modifier.padding(16.dp)
                         )
                         Column(
@@ -127,6 +155,7 @@ fun BookingListScreen(viewModel: BookingViewModel = viewModel()) {
 @Composable
 fun BookingContent(booking: Booking, isExpired: Boolean = false) {
     Column(modifier = Modifier.fillMaxSize()) {
+        // Ship Info
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -144,29 +173,29 @@ fun BookingContent(booking: Booking, isExpired: Boolean = false) {
                 Text(
                     text = "Booking Information",
                     style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 if (isExpired) {
                     Text("(expired)", color = Color.Red, fontSize = 12.sp)
                 }
-                Text("Ship Reference: ABCDEF")
-                Text("Duration: 2430")
-                Text("Expires on: ${Date(1722409261)}")
+                Text("Ship Reference: ${booking.shipReference}")
+                Text("Duration: ${booking.duration}")
+                Text("Expires on: ${Date(booking.expiryTime * 1000)}")
             }
         }
-        LazyColumn(
+        // Segments Info
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            item {
-                Text(
-                    text = "Segments",
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
-            items(booking.segments) { segment ->
+            Text(
+                text = "Segments",
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+            booking.segments.forEach { segment ->
                 SegmentCard(segment, isExpired)
             }
         }
