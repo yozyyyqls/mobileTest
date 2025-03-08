@@ -43,6 +43,9 @@ class BookingViewModel(private val context: Application) : AndroidViewModel(cont
         return System.currentTimeMillis() > booking.expiryTime * 1000
     }
 
+    /**
+     * Mock adding data in memory
+     */
     suspend fun addBooking() = withContext(Dispatchers.IO){
         val newBooking = Booking(
             "HIJKLMN",
