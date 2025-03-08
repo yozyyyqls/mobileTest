@@ -12,7 +12,7 @@ class MockBookingService(private val context: Context) : BookingService {
     override suspend fun fetchBookingData(): Result<BookingList> = withContext(Dispatchers.IO) {
         Log.d(TAG, "fetching booking data from network...")
         delay(1000) // mock network cost
-        return@withContext try {
+        try {
             val json = context.assets.open("booking.json").bufferedReader().use { it.readText() }
             parseBookingJson(json)
         } catch (e: Exception) {
@@ -25,7 +25,7 @@ class MockBookingService(private val context: Context) : BookingService {
         return try {
             val bookingList = Gson().fromJson(bookingJson, BookingList::class.java)
             if (bookingList == null) {
-                Result.failure(Exception("Unknown error"))
+                Result.failure(Exception("parsing result: Booking list is null"))
             } else {
                 Result.success(bookingList)
             }

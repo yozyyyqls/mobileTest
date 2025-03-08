@@ -2,6 +2,7 @@ package com.yozyyy.mobiletest.cache
 
 import android.content.Context
 import android.util.Log
+import androidx.core.content.edit
 import com.google.gson.Gson
 import com.yozyyy.mobiletest.models.BookingList
 
@@ -10,8 +11,10 @@ class MockBookingCache(context: Context): BookingCache {
 
     override fun saveBooking(bookingList: BookingList) {
         val bookingJson = Gson().toJson(bookingList)
-        sharedPreferences.edit().putString(KEY_BOOKING, bookingJson).apply()
-        sharedPreferences.edit().putLong(KEY_LAST_UPDATED, System.currentTimeMillis()).apply()
+        sharedPreferences.edit {
+            putString(KEY_BOOKING, bookingJson)
+            putLong(KEY_LAST_UPDATED, System.currentTimeMillis())
+        }
     }
 
     override fun getBooking(): BookingList? {
