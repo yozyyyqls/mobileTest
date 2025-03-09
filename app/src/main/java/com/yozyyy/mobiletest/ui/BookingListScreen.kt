@@ -128,7 +128,7 @@ fun BookingListScreen(viewModel: BookingViewModel = viewModel()) {
 
                 is BookingState.Success -> {
                     val bookings = (bookingState as BookingState.Success).bookingList.bookings
-                    if (bookings.isEmpty()) {
+                    if (bookings.isNullOrEmpty()) {
                         Image(
                             painter = painterResource(R.drawable.img_no_data),
                             contentDescription = "No data",
@@ -136,8 +136,19 @@ fun BookingListScreen(viewModel: BookingViewModel = viewModel()) {
                         )
                     } else {
                         LazyColumn(modifier = Modifier.fillMaxSize()) {
-                            items(bookings) { booking: Booking ->
-                                BookingContent(booking, viewModel.isBookingExpired(booking))
+                            items(
+                                items = bookings,
+                                key = { booking -> booking.shipReference }
+                            ) { booking: Booking ->
+                                    BookingItem(
+                                        booking = booking,
+                                        isExpired = viewModel.isBookingExpired(booking),
+                                        modifier = Modifier.animateItem(
+                                            fadeInSpec = tween(durationMillis = 500),
+                                            fadeOutSpec = tween(durationMillis = 500),
+                                        )
+                                    )
+
                             }
                         }
                     }
@@ -145,19 +156,34 @@ fun BookingListScreen(viewModel: BookingViewModel = viewModel()) {
 
                 is BookingState.Error -> {
                     val error = (bookingState as BookingState.Error)
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        Text(
-                            "Error: ${error.errMsg}",
-                            modifier = Modifier.padding(16.dp)
-                        )
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Icon(Icons.Rounded.Info, contentDescription = "", tint = Color.Red)
-                            Text(text = "No data available. \nPlease try again later")
+                    if (error.cacheBookingList == null) {
+                        ErrorContent(error)
+                    } else {
+                        val cacheBookings = error.cacheBookingList.bookings
+                        if (cacheBookings.isNullOrEmpty()) {
+                            Image(
+                                painter = painterResource(R.drawable.img_no_data),
+                                contentDescription = "No data",
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        } else {
+                            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                                items(
+                                    items = cacheBookings,
+                                    key = { booking -> booking.shipReference }
+                                ) { booking: Booking ->
+                                    BookingItem(
+                                        booking = booking,
+                                        isExpired = viewModel.isBookingExpired(booking),
+                                        modifier = Modifier.animateItem(
+                                            fadeInSpec = tween(durationMillis = 500),
+                                            fadeOutSpec = tween(durationMillis = 500),
+                                        )
+                                    )
+                                }
+                            }
                         }
+                        Toast.makeText(context, "refresh fails: ${error.errMsg}", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -167,8 +193,8 @@ fun BookingListScreen(viewModel: BookingViewModel = viewModel()) {
 }
 
 @Composable
-fun BookingContent(booking: Booking, isExpired: Boolean = false) {
-    Column(modifier = Modifier.fillMaxSize()) {
+fun BookingItem(modifier: Modifier = Modifier, booking: Booking, isExpired: Boolean = false) {
+    Column(modifier = modifier.fillMaxSize()) {
         // Ship Info
         Card(
             modifier = Modifier
@@ -301,12 +327,30 @@ fun SegmentCard(segment: Segment, isExpired: Boolean = false) {
     }
 }
 
+@Composable
+fun ErrorContent(error: BookingState.Error) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Text(
+            "Error: ${error.errMsg}",
+            modifier = Modifier.padding(16.dp)
+        )
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(Icons.Rounded.Info, contentDescription = "", tint = Color.Red)
+            Text(text = "No data available. \nPlease try again later")
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun BookingListScreenPreview() {
     MobileTestTheme {
-        BookingContent(
-            Booking(
+        BookingItem(
+            booking = Booking(
                 "ABCDEF",
                 "",
                 false,
@@ -332,7 +376,7 @@ fun BookingListScreenPreview() {
                         )
                     )
                 )
-            ), true
+            ), isExpired = true
         )
     }
 }

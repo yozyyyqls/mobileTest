@@ -29,7 +29,16 @@ class BookingDataProvider(
         }
     }
 
-    suspend fun refresh(): BookingState = fetchFromNetwork()
+    suspend fun refresh(): BookingState {
+        val state = fetchFromNetwork()
+        if (state is BookingState.Success) {
+            return state
+        } else {
+            val cache = bookingCache.getBooking()
+            val errorState = state as BookingState.Error
+            return BookingState.Error(errorState.errMsg, cache)
+        }
+    }
 
     private fun fetchFromCache(): BookingList? {
         val cacheBookingList = bookingCache.getBooking()
@@ -45,16 +54,11 @@ class BookingDataProvider(
 
     private suspend fun fetchFromNetwork(): BookingState {
         val result = bookingService.fetchBookingData()
-        return if (result.isSuccess) {
-            val bookingList = result.getOrNull()
+        val bookingList = result.getOrNull()
+        return if (result.isSuccess && bookingList != null) {
             printBookingDetails(bookingList, "Network")
-            if (bookingList == null) {
-                val errMsg = errorHandler.handleException(Exception("Unknown error"))
-                BookingState.Error(errMsg, null)
-            } else {
-                bookingCache.saveBooking(bookingList)
-                BookingState.Success(bookingList)
-            }
+            bookingCache.saveBooking(bookingList)
+            BookingState.Success(bookingList)
         } else {
             val errMsg = errorHandler.handleException(result.exceptionOrNull() ?: Exception("Unknown error"))
             BookingState.Error(errMsg, null)

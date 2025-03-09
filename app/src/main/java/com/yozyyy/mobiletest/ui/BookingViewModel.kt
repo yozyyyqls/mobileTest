@@ -47,8 +47,17 @@ class BookingViewModel(private val context: Application) : AndroidViewModel(cont
      * Mock adding data in memory
      */
     suspend fun addBooking() = withContext(Dispatchers.IO){
+        if (_bookingState.value == BookingState.Loading) return@withContext
+
+        // read the old data
+        val currentBookings = if (_bookingState.value is BookingState.Success) {
+            (_bookingState.value as BookingState.Success).bookingList.bookings
+        } else {
+            (_bookingState.value as BookingState.Error).cacheBookingList?.bookings
+        }
+
         val newBooking = Booking(
-            "HIJKLMN",
+            "REFERENCE${currentBookings?.size?.plus(1)}",
             "GGGHHHIIIJJJKKKLLL",
             false,
             1744033943,
@@ -74,12 +83,9 @@ class BookingViewModel(private val context: Application) : AndroidViewModel(cont
                 )
             )
         )
-        // read the old data
-        val json = context.assets.open("booking.json").bufferedReader().use { it.readText() }
-        val bookings = Gson().fromJson(json, BookingList::class.java).bookings
 
         val newBookings = mutableListOf(newBooking)
-        newBookings.addAll(bookings)
+        currentBookings?.let { newBookings.addAll(it) }
         _bookingState.value = BookingState.Success(BookingList(newBookings))
     }
 
