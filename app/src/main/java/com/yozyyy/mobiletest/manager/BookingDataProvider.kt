@@ -21,7 +21,6 @@ class BookingDataProvider(
         val cacheBookingList = fetchFromCache()
         return if (cacheBookingList != null) {
             // cache is valid
-            printBookingDetails(cacheBookingList, "Cache")
             BookingState.Success(cacheBookingList)
         } else {
             // cache is invalid, fetch data from network
