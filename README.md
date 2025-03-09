@@ -33,13 +33,7 @@
 </br><img src="./screenshot/Screenshot_20250308_194909.png" alt="drawing" width="200"/>
 
 3. **Refreshing**
-
-   <video width="200" height="" controls>
-      <source src="./screenshot/Screen_recording_20250308_194306.mp4" type="video/mp4" ></source>
-   </video>
+</br><img src="./screenshot/refreshing.gif" alt="drawing" width="200"/>
 
 4. **Adding Booking data**
-
-   <video width="200" height="" controls>
-      <source src="./screenshot/Screen_recording_20250308_194335.mp4" type="video/mp4" ></source>
-   </video>
+</br><img src="./screenshot/adding.gif" alt="drawing" width="200"/>
