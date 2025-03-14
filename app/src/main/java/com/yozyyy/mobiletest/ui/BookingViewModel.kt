@@ -4,7 +4,6 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
 import com.yozyyy.mobiletest.manager.BookingDataProvider
 import com.yozyyy.mobiletest.manager.BookingState
 import com.yozyyy.mobiletest.models.Booking
@@ -19,7 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class BookingViewModel(private val context: Application) : AndroidViewModel(context) {
+class BookingViewModel(context: Application) : AndroidViewModel(context) {
     private val bookingProvider = BookingDataProvider(context)
 
     private val _bookingState = MutableStateFlow<BookingState>(BookingState.Loading)

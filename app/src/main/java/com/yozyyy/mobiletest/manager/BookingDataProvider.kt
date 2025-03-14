@@ -3,7 +3,7 @@ package com.yozyyy.mobiletest.manager
 import android.content.Context
 import android.util.Log
 import com.yozyyy.mobiletest.cache.BookingCache
-import com.yozyyy.mobiletest.cache.MockBookingCache
+import com.yozyyy.mobiletest.cache.MockBookingDbCache
 import com.yozyyy.mobiletest.models.BookingList
 import com.yozyyy.mobiletest.service.BookingService
 import com.yozyyy.mobiletest.service.MockBookingService
@@ -11,7 +11,7 @@ import java.util.Date
 
 class BookingDataProvider(
     private val context: Context,
-    private val bookingCache: BookingCache = MockBookingCache(context),
+    private val bookingCache: BookingCache = MockBookingDbCache(context),
     private val bookingService: BookingService = MockBookingService(context),
     private val errorHandler: ErrorHandler = ErrorHandler(),
 ) {
@@ -39,7 +39,7 @@ class BookingDataProvider(
         }
     }
 
-    private fun fetchFromCache(): BookingList? {
+    private suspend fun fetchFromCache(): BookingList? {
         val cacheBookingList = bookingCache.getBooking()
         val lastUpdateTime = bookingCache.getLastUpdateTime()
         val isCacheValid = (cacheBookingList != null) && (System.currentTimeMillis() - lastUpdateTime < CACHE_EXPIRATION_TIME)

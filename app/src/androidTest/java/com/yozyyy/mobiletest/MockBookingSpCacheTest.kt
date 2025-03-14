@@ -2,7 +2,7 @@ package com.yozyyy.mobiletest
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.yozyyy.mobiletest.cache.MockBookingCache
+import com.yozyyy.mobiletest.cache.MockBookingSpCache
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -10,12 +10,12 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
-class MockBookingCacheTest {
+class MockBookingSpCacheTest {
     private lateinit var context: Context
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
 
-    private lateinit var mockBookingCache: MockBookingCache
+    private lateinit var mockBookingSpCache: MockBookingSpCache
 
     @Before
     fun setup() {
@@ -24,13 +24,13 @@ class MockBookingCacheTest {
             every { getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) } returns sharedPreferences
         }
 
-        mockBookingCache = MockBookingCache(context)
+        mockBookingSpCache = MockBookingSpCache(context)
     }
 
     @Test
     fun getBooking_should_return_success_result() = runTest {
         every { sharedPreferences.getString(KEY_BOOKING, null) } returns validBookingJson
-        val bookingList = mockBookingCache.getBooking()
+        val bookingList = mockBookingSpCache.getBooking()
 
         assertTrue(bookingList != null)
         assertTrue(bookingList?.bookings != null)
@@ -39,7 +39,7 @@ class MockBookingCacheTest {
     @Test
     fun getBooking_should_return_null() = runTest {
         every { sharedPreferences.getString(KEY_BOOKING, null) } returns null
-        val bookingList = mockBookingCache.getBooking()
+        val bookingList = mockBookingSpCache.getBooking()
 
         assertTrue(bookingList == null)
     }

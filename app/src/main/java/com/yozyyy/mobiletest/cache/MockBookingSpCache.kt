@@ -6,10 +6,10 @@ import androidx.core.content.edit
 import com.google.gson.Gson
 import com.yozyyy.mobiletest.models.BookingList
 
-class MockBookingCache(context: Context): BookingCache {
+class MockBookingSpCache(context: Context): BookingCache {
     private val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    override fun saveBooking(bookingList: BookingList) {
+    override suspend fun saveBooking(bookingList: BookingList) {
         val bookingJson = Gson().toJson(bookingList)
         sharedPreferences.edit {
             putString(KEY_BOOKING, bookingJson)
@@ -17,7 +17,7 @@ class MockBookingCache(context: Context): BookingCache {
         }
     }
 
-    override fun getBooking(): BookingList? {
+    override suspend fun getBooking(): BookingList? {
         Log.d(TAG, "fetching booking data from cache...")
         val bookingJson = sharedPreferences.getString(KEY_BOOKING, null) ?: return null
         return try {
@@ -28,7 +28,7 @@ class MockBookingCache(context: Context): BookingCache {
         }
     }
 
-    override fun clear() {
+    override suspend fun clear() {
         sharedPreferences.edit().clear().apply()
     }
 

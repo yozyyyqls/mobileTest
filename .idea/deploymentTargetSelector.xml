@@ -30,10 +30,10 @@
       </SelectionState>
       <SelectionState runConfigName="MockBookingCacheTest">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-03-08T11:39:19.568461Z">
+        <DropdownSelection timestamp="2025-03-14T08:29:00.790735Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=VED7N18901000043" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/lishanqiu/.android/avd/Pixel_9_API_33.avd" />
             </handle>
           </Target>
         </DropdownSelection>
