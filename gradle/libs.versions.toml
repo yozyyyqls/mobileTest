@@ -13,6 +13,10 @@ gson = "2.12.1"
 kotlinxCoroutinesTest = "1.10.1"
 mockkAndroid = "1.13.17"
 mockkAgentAndroid = "1.13.17"
+roomRuntime = "2.6.1"
+roomCompiler = "2.6.1"
+ksp = "2.0.0-1.0.24"
+roomKtx = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -34,9 +38,13 @@ gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockkAndroid" }
 mockk-agent-android = { group = "io.mockk", name = "mockk-agent-android", version.ref = "mockkAgentAndroid" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomRuntime" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCompiler" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ksp-google = {id = "com.google.devtools.ksp", version.ref = "ksp"}
 
